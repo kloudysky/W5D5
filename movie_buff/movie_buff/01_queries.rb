@@ -1,3 +1,27 @@
+  # create_table "actors", force: :cascade do |t|
+  #   t.string "name", null: false
+  #   t.index ["name"], name: "index_actors_on_name"
+  # end
+
+  # create_table "castings", force: :cascade do |t|
+  #   t.integer "actor_id", null: false
+  #   t.integer "movie_id", null: false
+  #   t.integer "ord", null: false
+  #   t.index ["actor_id", "movie_id"], name: "index_castings_on_actor_id_and_movie_id", unique: true
+  #   t.index ["actor_id"], name: "index_castings_on_actor_id"
+  #   t.index ["movie_id"], name: "index_castings_on_movie_id"
+  # end
+
+  # create_table "movies", force: :cascade do |t|
+  #   t.string "title", null: false
+  #   t.integer "yr", null: false
+  #   t.float "score", null: false
+  #   t.integer "votes", null: false
+  #   t.integer "director_id", null: false
+  #   t.index ["director_id"], name: "index_movies_on_director_id"
+  #   t.index ["title"], name: "index_movies_on_title"
+  # end
+
 def it_was_ok
   # Consider the following:
   #
@@ -7,6 +31,8 @@ def it_was_ok
   #
   # Find the id, title, and score of all movies with scores between 2 and 3
 
+  Movie.select(:id, :title, :score).where('score > 2').where('score <= 3')
+  # Movie.select(:id, :title, :score).where('score BETWEEN 2 AND 3')
 end
 
 def harrison_ford
@@ -20,7 +46,7 @@ def harrison_ford
   #
   # Find the id and title of all movies in which Harrison Ford
   # appeared but not as a lead actor
-
+  Movie.select(:id, :title).joins(:actors).where(actors: {name: 'Harrison Ford'}).where.not('castings.ord = 1')
 end
 
 def biggest_cast
@@ -37,7 +63,7 @@ def biggest_cast
   #
   # Find the id and title of the 3 movies with the
   # largest casts (i.e most actors)
-
+  Movie.select(:id, :title).joins(:castings).group('movies.id').order('COUNT(actor_id) DESC').limit(3) 
 end
 
 def directed_by_one_of(them)
@@ -45,6 +71,8 @@ def directed_by_one_of(them)
   #
   # Movie.where('yr IN (?)', years)
   #
+
+
   # We can use IN to test if an element is present in an array.
   #
   # ActiveRecord gives us an even better way to write this:
@@ -52,7 +80,7 @@ def directed_by_one_of(them)
   # Movie.where(yr: years)
   #
   # Find the id and title of all the movies directed by one of 'them'.
-
+  Movie.select(:id, :title).joins(:director).where(actors: {name: them})
 end
 
 def movie_names_before_1940
@@ -66,5 +94,5 @@ def movie_names_before_1940
   # improve performace for larger queries.
   #
   # Use pluck to find the title of all movies made before 1940.
-
+  Movie.where('yr < 1940').pluck(:title)
 end
